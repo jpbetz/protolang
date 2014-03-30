@@ -1,0 +1,2 @@
+extern print(arg);
+def main() print(42);

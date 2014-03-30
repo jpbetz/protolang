@@ -1,0 +1,3 @@
+extern print(arg);
+def foo(a b) a*a + 2*a*b + b*b;
+def main() print(foo(2, 3));
