@@ -11,14 +11,14 @@ Current status:
 * Compilation works better, make scripts are setup to make it easy to write test programs
 
 Plan:
-[x] Build framework able to do both native compilation and REPL based execution
-[x] if/then/else
-[ ] boolean logic
-[ ] basic pattern matching, basic types (algebraic + primitives)
-[ ] List types
-[ ] IO
-[ ] Basic management
-[ ] multiple files, modularity
+* [x] Build framework able to do both native compilation and REPL based execution
+* [x] if/then/else
+* [ ] boolean logic
+* [ ] basic pattern matching, basic types (algebraic + primitives)
+* [ ] List types
+* [ ] IO
+* [ ] Basic management
+* [ ] multiple files, modularity
 
 To build
 --------
