@@ -34,23 +34,31 @@ runInMode :: AST.Module -> CodegenMode -> IO (Either String AST.Module)
 runInMode mod mode = do
   withContext $ \context ->
     runErrorT $ withModuleFromAST context mod $ \m ->
-      jit context $ \executionEngine ->
-        withPassManager passes $ \pm -> do
-          runPassManager pm m
-          optmod <- moduleAST m
-          case mode of
-            REPL ->
-					  	EE.withModuleInEngine executionEngine m $ \ee -> do
-						    mainfn <- EE.getFunction ee (AST.Name "main")
-						    case mainfn of
-						      Just fn -> do
-						        res <- run fn
-						        putStrLn $ show res
-						      Nothing -> return ()
-            GenerateLLVM -> do
-              s <- moduleLLVMAssembly m;
-	            putStrLn s
-          return optmod
+      case mode of 
+         REPL -> runJIT context m
+         GenerateLLVM -> genreatellvm context m
+
+genreatellvm :: Context -> Module -> IO AST.Module
+genreatellvm context m = do
+  optmod <- moduleAST m
+  s <- moduleLLVMAssembly m
+  putStrLn s
+  return optmod
+
+runJIT :: Context -> Module -> IO AST.Module
+runJIT context m =
+  jit context $ \executionEngine ->
+    withPassManager passes $ \pm -> do
+    runPassManager pm m
+    optmod <- moduleAST m
+    EE.withModuleInEngine executionEngine m $ \ee -> do
+      mainfn <- EE.getFunction ee (AST.Name "main")
+      case mainfn of
+        Just fn -> do
+          res <- run fn
+          putStrLn $ show res
+        Nothing -> return ()
+      return optmod
 
 jit :: Context -> (EE.MCJIT -> IO a) -> IO a
 jit c = EE.withMCJIT c optLevel model ptrelim fastins
