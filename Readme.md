@@ -56,7 +56,7 @@ To run the REPL
 
 Start the REPL:
 ```
-dist/build/proto/proto
+./repl
 ```
 
 Paste any code you want to run, e.g.:

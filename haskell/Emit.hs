@@ -137,9 +137,9 @@ cgen (S.For ivar start cond step body) = do
 liftError :: ErrorT String IO a -> IO a
 liftError = runErrorT >=> either fail return
 
-codegen :: AST.Module -> Bool -> [S.Expr] -> IO AST.Module
-codegen mod evaluate fns = do
-  res <- runJIT oldast evaluate
+codegen :: AST.Module -> CodegenMode -> [S.Expr] -> IO AST.Module
+codegen mod mode fns = do
+  res <- runInMode oldast mode
   case res  of
     Right newast -> return newast
     Left err     -> putStrLn ("error: " ++ err) >> return oldast

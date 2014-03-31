@@ -20,11 +20,15 @@ BUILDDIR=build
 # Since we're testing a compilation workflow, keep intermediate .ll and .s file around for inspection
 .SECONDARY:
 
-test: $(BUILDDIR)/polynomial.result $(BUILDDIR)/minimal.result $(BUILDDIR)/fibonacci.result
+test: $(BUILDDIR)/polynomial.result $(BUILDDIR)/minimal.result $(BUILDDIR)/fibonacci.result $(BUILDDIR)/willnotcompile.error
 	diff $(BUILDDIR)/polynomial.result polynomial.expected
 	diff $(BUILDDIR)/minimal.result minimal.expected
 	diff $(BUILDDIR)/fibonacci.result fibonacci.expected
+	diff $(BUILDDIR)/willnotcompile.error willnotcompile.expected
 	@echo "TESTS PASSED"
+
+$(BUILDDIR)/%.error: %.proto
+	$(PROTO) $< 2> $@
 
 $(BUILDDIR)/%.result: $(BUILDDIR)/%.out
 	./$< > $@

@@ -23,28 +23,33 @@ import qualified LLVM.General.ExecutionEngine as EE
 
 foreign import ccall "dynamic" haskFun :: FunPtr (IO Double) -> (IO Double)
 
+data CodegenMode
+  = GenerateLLVM
+  | REPL
+
 passes :: PassSetSpec
 passes = defaultCuratedPassSetSpec { optLevel = Just 3 }
 
-runJIT :: AST.Module -> Bool -> IO (Either String AST.Module)
-runJIT mod evaluate = do
+runInMode :: AST.Module -> CodegenMode -> IO (Either String AST.Module)
+runInMode mod mode = do
   withContext $ \context ->
-    jit context $ \executionEngine ->
-      runErrorT $ withModuleFromAST context mod $ \m ->
+    runErrorT $ withModuleFromAST context mod $ \m ->
+      jit context $ \executionEngine ->
         withPassManager passes $ \pm -> do
           runPassManager pm m
           optmod <- moduleAST m
-          s <- moduleLLVMAssembly m
-          putStrLn s
--- uncomment for REPL
-          EE.withModuleInEngine executionEngine m $ \ee -> do
-            mainfn <- EE.getFunction ee (AST.Name "main")
-            case (mainfn, evaluate) of
-              (Just fn, True) -> do
-                res <- run fn
-                putStrLn $ "Evaluated to: " ++ show res
-              _ -> return ()
---
+          case mode of
+            REPL ->
+					  	EE.withModuleInEngine executionEngine m $ \ee -> do
+						    mainfn <- EE.getFunction ee (AST.Name "main")
+						    case mainfn of
+						      Just fn -> do
+						        res <- run fn
+						        putStrLn $ show res
+						      Nothing -> return ()
+            GenerateLLVM -> do
+              s <- moduleLLVMAssembly m;
+	            putStrLn s
           return optmod
 
 jit :: Context -> (EE.MCJIT -> IO a) -> IO a

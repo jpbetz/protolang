@@ -31,6 +31,9 @@ newtype LLVM a = LLVM { unLLVM :: State AST.Module a }
 runLLVM :: AST.Module -> LLVM a -> AST.Module
 runLLVM = flip (execState . unLLVM)
 
+initModule :: AST.Module
+initModule = emptyModule "<Empty Module>"
+
 emptyModule :: String -> AST.Module
 emptyModule label = defaultModule { moduleName = label }
 
