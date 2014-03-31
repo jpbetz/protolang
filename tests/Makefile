@@ -31,7 +31,7 @@ $(BUILDDIR)/%.error: %.proto
 	$(PROTO) $< 2> $@
 
 $(BUILDDIR)/%.result: $(BUILDDIR)/%.out
-	./$< > $@
+	-./$< > $@  # - at beginning is to ignore exit status code
 
 # Our language (.proto) to LLVM (.ll)
 $(BUILDDIR)/%.ll: %.proto

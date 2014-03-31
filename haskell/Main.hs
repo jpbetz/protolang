@@ -19,27 +19,24 @@ main :: IO ()
 main = do
   args <- getArgs
   case args of
-    []      -> repl
-    [fname] -> batchCompile fname >> return ()
+    []      ->    readExecutePrintLoop
+    [filename] -> compileFile filename
 
-repl :: IO ()
-repl = runInputT defaultSettings (loop initModule)
+readExecutePrintLoop :: IO ()
+readExecutePrintLoop = runInputT defaultSettings (loop initModule)
   where
   loop mod = do
     minput <- getInputLine "proto> "
     case minput of
       Nothing -> outputStrLn "Goodbye."
       Just input -> do
-        modn <- liftIO $ process mod REPL input
+        modn <- liftIO $ parseAndProcess mod REPL input
         case modn of
           Just modn -> loop modn
           Nothing -> loop mod
 
-batchCompile :: String -> IO (Maybe AST.Module)
-batchCompile fname = readFile fname >>= process initModule GenerateLLVM
-
-process :: AST.Module -> CodegenMode -> String -> IO (Maybe AST.Module)
-process astModule mode source = do
+parseAndProcess :: AST.Module -> CodegenMode -> String -> IO (Maybe AST.Module)
+parseAndProcess astModule mode source = do
   let parseResult = parseToplevel source
   case parseResult of
     Left error -> hPrint stderr error >> return Nothing
@@ -47,4 +44,8 @@ process astModule mode source = do
       ast <- codegen astModule mode expressions
       return $ Just ast
 
-
+compileFile :: String -> IO ()
+compileFile filename = do
+  filecontents <- readFile filename
+  parseAndProcess initModule GenerateLLVM filecontents
+  return ()
